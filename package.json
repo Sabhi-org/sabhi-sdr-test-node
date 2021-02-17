@@ -22,7 +22,7 @@
     "@veramo/kms-local": "^1.1.0",
     "@veramo/message-handler": "^1.1.0",
     "@veramo/selective-disclosure": "^1.1.0",
-    "axios": "^0.21.0",
+    "axios": "^0.21.1",
     "body-parser": "^1.19.0",
     "chalk": "^4.1.0",
     "compression": "^1.7.4",

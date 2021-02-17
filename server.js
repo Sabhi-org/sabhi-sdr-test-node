@@ -4,7 +4,7 @@ const app = express();
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const { agent } = require('./agent');
-
+const { apiInstance } = require('./axios-instance');
 // adding data configuration and enviroment file
 require('dotenv').config();
 
@@ -51,22 +51,21 @@ app.get('/did', async (req, res) => {
 
 app.post('/vp', async (req, res) => {
     try {
-        const { did } = req.body;
-        // let data = {
-        //     issuer: did,
-        //     subject: issuer,
-        //     tag: tag, // tag: "login"
-        //     '@context': ['https://www.w3.org/2018/credentials/v1'],
-        //     type: ['VerifiablePresentation'],
-        //     verifiableCredential: [],
-        //     audience: [issuer],
-        // };
 
-        // const vp = await agent.handleAction({
-        //     type: 'sign.w3c.vp.jwt',
-        //     save: true,
-        //     data,
-        // });
+        const {
+            fullName,
+            fatherName,
+            gender,
+            countryOfStay,
+            identityNumber,
+            birthDate,
+            issueDate,
+            expireDate,
+            temporaryAddress,
+            permanentAddress,
+            did,
+            uri,
+        } = req.body;
 
 
         const verifiableCredential = await agent.createVerifiableCredential({
@@ -76,12 +75,21 @@ app.post('/vp', async (req, res) => {
                 type: ['VerifiableCredential'],
                 issuanceDate: new Date().toISOString(),
                 credentialSubject: {
-                    id: 'did:web:uport.me',
-                    name: 'hamza',
+                    id: did,
+                    fullName,
+                    fatherName,
+                    gender,
+                    countryOfStay,
+                    identityNumber,
+                    birthDate,
+                    issueDate,
+                    expireDate,
+                    temporaryAddress,
+                    permanentAddress,
                 },
             },
             proofFormat: 'jwt',
-        })
+        });
 
 
         const verifiablePresentation = await agent.createVerifiablePresentation({
@@ -95,14 +103,16 @@ app.post('/vp', async (req, res) => {
             },
             proofFormat: 'jwt',
             save: true,
-        })
+        });
 
-
-        console.log(verifiableCredential);
+        await apiInstance.post('/user/vp', verifiablePresentation);
 
         res.send(verifiablePresentation);
 
-    } catch (error) {
+    } catch (error) {   
         console.log(error);
     }
-})
+});
+
+
+
