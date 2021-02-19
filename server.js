@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const { agent } = require('./agent');
 const { apiInstance } = require('./axios-instance');
+const { vc } = require('./vc');
 // adding data configuration and enviroment file
 require('dotenv').config();
 
@@ -52,62 +53,26 @@ app.get('/did', async (req, res) => {
 app.post('/vp', async (req, res) => {
     try {
 
-        const {
-            fullName,
-            fatherName,
-            gender,
-            countryOfStay,
-            identityNumber,
-            birthDate,
-            issueDate,
-            expireDate,
-            temporaryAddress,
-            permanentAddress,
-            did,
-            uri,
-        } = req.body;
-
-
-        const verifiableCredential = await agent.createVerifiableCredential({
-            credential: {
-                issuer: { id: did },
-                '@context': ['https://www.w3.org/2018/credentials/v1'],
-                type: ['VerifiableCredential'],
-                issuanceDate: new Date().toISOString(),
-                credentialSubject: {
-                    id: did,
-                    fullName,
-                    fatherName,
-                    gender,
-                    countryOfStay,
-                    identityNumber,
-                    birthDate,
-                    issueDate,
-                    expireDate,
-                    temporaryAddress,
-                    permanentAddress,
+        const { did, uri, } = req.body;
+        const verifiableCredential = await vc(req.body);
+        if (verifiableCredential) {
+            const verifiablePresentation = await agent.createVerifiablePresentation({
+                presentation: {
+                    verifier: [uri],
+                    holder: did,
+                    '@context': ['https://www.w3.org/2018/credentials/v1'],
+                    type: ['VerifiablePresentation'],
+                    issuanceDate: new Date().toISOString(),
+                    verifiableCredential: verifiableCredential,
                 },
-            },
-            proofFormat: 'jwt',
-        });
-
-
-        const verifiablePresentation = await agent.createVerifiablePresentation({
-            presentation: {
-                verifier: [uri],
-                holder: did,
-                '@context': ['https://www.w3.org/2018/credentials/v1'],
-                type: ['VerifiablePresentation'],
-                issuanceDate: new Date().toISOString(),
-                verifiableCredential: verifiableCredential,
-            },
-            proofFormat: 'jwt',
-            save: true,
-        });
-        console.log(verifiablePresentation);
-        await apiInstance.post('/user/vp', verifiablePresentation);
-        res.send(verifiablePresentation);
-    } catch (error) {   
+                proofFormat: 'jwt',
+                save: true,
+            });
+            // console.log(verifiablePresentation);
+            // await apiInstance.post('/user/vp', verifiablePresentation);
+            res.send(verifiablePresentation);
+        }
+    } catch (error) {
         console.log(error);
     }
 });
