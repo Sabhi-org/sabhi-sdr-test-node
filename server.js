@@ -76,6 +76,3 @@ app.post('/vp', async (req, res) => {
         console.log(error);
     }
 });
-
-
-
